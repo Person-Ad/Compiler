@@ -1,12 +1,11 @@
-#include <iostream>
-#include <FlexLexer.h>
+// #include <iostream>
 
-int main() {
-    yyFlexLexer lexer_instance;
-    std::cout << "--- Lexer Output Start ---\n";
-    while (lexer_instance.yylex() != 0) {
-        // Loop continues until the lexer returns 0 (end of input)
-    }
-    std::cout << "--- Lexer Output End ---\n";
-    return 0;
-}
+// int main() {
+//     yyFlexLexer lexer_instance;
+//     std::cout << "--- Lexer Output Start ---\n";
+//     while (lexer_instance.yylex() != 0) {
+//         // Loop continues until the lexer returns 0 (end of input)
+//     }
+//     std::cout << "--- Lexer Output End ---\n";
+//     return 0;
+// }
