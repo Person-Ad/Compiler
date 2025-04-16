@@ -36,101 +36,239 @@
     nodeType* nodeValue;
 }
 // Token declarations
-%token IF ELSE WHILE FOR SWITCH CASE DEFAULT BREAK CONTINUE RETURN TERNARY COLON SL S BLOCK
+%token WHILE REPEATUNTIL SWITCH CASE DEFAULT BREAK CONTINUE RETURN TERNARY COLON SL S BLOCK
+%token COND ITER_BODY FOR FOR_COND FOR_INIT FOR_STEP FOR_TERM
+%token COMMA FUNC FUNC_ARG_LIST FUNC_BODY FUNC_ARG
+%token IF ELSE IFELSE
+%token SWITCH_BODY SWITCH_CASES SWITCH_CASE  DEFAULT_CASE SWITCH_VAR
+%token INCREMENT_PREFIX INCREMENT_POSTFIX DECREMENT_POSTFIX DECREMENT_PREFIX
 %token <stringValue> KW_VAR KW_CONST KW_FUNC KW_INT KW_FLOAT KW_BOOL KW_STRING
 %token <stringValue> IDENTIFIER STRING
 %token <intValue> INTEGER
 %token <floatValue> FLOAT
 %token <boolValue> BOOLEAN
 %token PLUS MINUS STAR SLASH PERCENT EQ NEQ LT GT LE GE AND OR NOT
-%token ASSIGN SEMICOLON LPAREN RPAREN LBRACE RBRACE
+%token ASSIGN SEMICOLON LPAREN RPAREN LBRACE RBRACE PLUS_ASSIGN MINUS_ASSIGN STAR_ASSIGN SLASH_ASSIGN BIT_AND BIT_OR BIT_XOR BIT_NOT SHIFT_LEFT SHIFT_RIGHT INCREMENT DECREMENT
 
+%right ASSIGN
+%left OR
+%left AND
+%left EQ NEQ
+%left LT GT LE GE
 %left PLUS MINUS
 %left STAR SLASH PERCENT
-%left EQ NEQ LT GT LE GE
-%left AND OR
 %right NOT
 
+%type <nodeValue> expression statement_list statement program iter_body condition for_condition for_init for_terminate for_step
+%type <nodeValue> declaration_statement assignment_statement block_statement iterative_statement conditional_statement
+%type <nodeValue> function_arguments function_statement function_body function_argument
+%type <nodeValue> if_body else_body 
+%type <nodeValue> switch_body switch_variable switch_cases single_case default_case case_value
 
-%type <nodeValue> expression statement_list statement program
-%type <nodeValue> declaration_statement assignment_statement block_statement
+
 
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 
-<<EOF>>    { return 0; }
 
 // Grammar rules
 %%
 program
-    : statement_list                                           { printf("Parsed program\n");topNode=$1; exit(0); }
+    : statement_list                                           { topNode=$1;}
     ;
 
 statement_list
-    : statement                                                 { $$ = $1; printf("Parsed statement\n");}
-    | statement_list statement                                  { $$ = opr(SL, 2, $1, $2); printf("Parsed statement concat\n");}
+    : statement                                                 { $$ = $1; }
+    | statement_list statement                                  { $$ = opr(SL, 2, $1, $2); }
     ;
 
 statement
-    : declaration_statement                                     { $$ = $1; }
-    | assignment_statement                                      { $$ = $1; }
-    // | conditional_statement                                  
-    // | iterative_statement
-    // | function_statement
+    : declaration_statement SEMICOLON                           { $$ = $1; }
+    | assignment_statement SEMICOLON                            { $$ = $1; }
+    | conditional_statement                                     { $$ = $1; }
+    | iterative_statement                                       { $$ = $1; }
+    | function_statement                                        { $$ = $1; }
     | block_statement                                           { $$ = $1; }
     ;
 
 // Note: no declaration of constants with no values
 declaration_statement
-    : KW_VAR IDENTIFIER SEMICOLON                               { $$ = id($2); printf("Declared variable: %s\n", $2); }
-    | KW_BOOL IDENTIFIER SEMICOLON                              { $$ = id($2); printf("Declared boolean: %s\n", $2); }
-    | KW_INT IDENTIFIER SEMICOLON                               { $$ = id($2); printf("Declared integer: %s\n", $2); }
-    | KW_FLOAT IDENTIFIER SEMICOLON                             { $$ = id($2); printf("Declared float: %s\n", $2); }
-    | KW_STRING IDENTIFIER SEMICOLON                            { $$ = id($2); printf("Declared string: %s\n", $2); }
+    : KW_VAR IDENTIFIER                               { $$ = id($2);  }
+    | KW_BOOL IDENTIFIER                              { $$ = id($2);  }
+    | KW_INT IDENTIFIER                               { $$ = id($2);  }
+    | KW_FLOAT IDENTIFIER                             { $$ = id($2);  }
+    | KW_STRING IDENTIFIER                            { $$ = id($2);  }
     ;
-  
+
 assignment_statement
-    : IDENTIFIER ASSIGN expression SEMICOLON                    { $$ = opr(ASSIGN, 2, id($1), $3); printf("Assigned %s\n", $1); }
-    | KW_CONST IDENTIFIER ASSIGN expression SEMICOLON           { $$ = opr(ASSIGN, 2, id($2), $4); printf("Assigned constant %s\n", $2); }
-    | KW_VAR IDENTIFIER ASSIGN expression SEMICOLON             { $$ = opr(ASSIGN, 2, id($2), $4); printf("Assigned variable %s\n", $2); }
-    | KW_BOOL IDENTIFIER ASSIGN expression SEMICOLON            { $$ = opr(ASSIGN, 2, id($2), $4); printf("Assigned boolean %s\n", $2); }
-    | KW_FLOAT IDENTIFIER ASSIGN expression SEMICOLON           { $$ = opr(ASSIGN, 2, id($2), $4); printf("Assigned float %s\n", $2); }
-    | KW_INT IDENTIFIER ASSIGN expression SEMICOLON             { $$ = opr(ASSIGN, 2, id($2), $4); printf("Assigned integer %s\n", $2); }
-    | KW_STRING IDENTIFIER ASSIGN expression SEMICOLON          { $$ = opr(ASSIGN, 2, id($2), $4); printf("Assigned string %s\n", $2); }
+    : IDENTIFIER ASSIGN expression                                { $$ = opr(ASSIGN, 2, id($1), $3); }
+    | IDENTIFIER PLUS_ASSIGN expression                           { $$ = opr(PLUS_ASSIGN, 2, id($1), $3); }
+    | IDENTIFIER MINUS_ASSIGN expression                          { $$ = opr(MINUS_ASSIGN, 2, id($1), $3); }
+    | IDENTIFIER STAR_ASSIGN expression                           { $$ = opr(STAR_ASSIGN, 2, id($1), $3); }
+    | IDENTIFIER SLASH_ASSIGN expression                          { $$ = opr(SLASH_ASSIGN, 2, id($1), $3); }
+    | INCREMENT expression                                        { $$ = opr(INCREMENT_PREFIX, 1, $2); }
+    | DECREMENT expression                                        { $$ = opr(DECREMENT_PREFIX, 1, $2); }
+    | expression INCREMENT                                        { $$ = opr(INCREMENT_POSTFIX, 1, $1); }
+    | expression DECREMENT                                        { $$ = opr(DECREMENT_POSTFIX, 1, $1); }
+    | KW_CONST IDENTIFIER ASSIGN expression                       { $$ = opr(ASSIGN, 2, id($2), $4); }
+    | KW_CONST IDENTIFIER PLUS_ASSIGN expression                  { $$ = opr(PLUS_ASSIGN, 2, id($2), $4); }
+    | KW_CONST IDENTIFIER MINUS_ASSIGN expression                 { $$ = opr(MINUS_ASSIGN, 2, id($2), $4); }
+    | KW_CONST IDENTIFIER STAR_ASSIGN expression                  { $$ = opr(STAR_ASSIGN, 2, id($2), $4); }
+    | KW_CONST IDENTIFIER SLASH_ASSIGN expression                 { $$ = opr(SLASH_ASSIGN, 2, id($2), $4); }
+    | KW_VAR IDENTIFIER ASSIGN expression                         { $$ = opr(ASSIGN, 2, id($2), $4); }
+    | KW_VAR IDENTIFIER PLUS_ASSIGN expression                    { $$ = opr(PLUS_ASSIGN, 2, id($2), $4); }
+    | KW_VAR IDENTIFIER MINUS_ASSIGN expression                   { $$ = opr(MINUS_ASSIGN, 2, id($2), $4); }
+    | KW_VAR IDENTIFIER STAR_ASSIGN expression                    { $$ = opr(STAR_ASSIGN, 2, id($2), $4); }
+    | KW_VAR IDENTIFIER SLASH_ASSIGN expression                   { $$ = opr(SLASH_ASSIGN, 2, id($2), $4); }
+    | KW_BOOL IDENTIFIER ASSIGN expression                        { $$ = opr(ASSIGN, 2, id($2), $4); }
+    | KW_BOOL IDENTIFIER PLUS_ASSIGN expression                   { $$ = opr(PLUS_ASSIGN, 2, id($2), $4); }
+    | KW_BOOL IDENTIFIER MINUS_ASSIGN expression                  { $$ = opr(MINUS_ASSIGN, 2, id($2), $4); }
+    | KW_BOOL IDENTIFIER STAR_ASSIGN expression                   { $$ = opr(STAR_ASSIGN, 2, id($2), $4); }
+    | KW_BOOL IDENTIFIER SLASH_ASSIGN expression                  { $$ = opr(SLASH_ASSIGN, 2, id($2), $4); }
+    | KW_FLOAT IDENTIFIER ASSIGN expression                       { $$ = opr(ASSIGN, 2, id($2), $4); }
+    | KW_FLOAT IDENTIFIER PLUS_ASSIGN expression                  { $$ = opr(PLUS_ASSIGN, 2, id($2), $4); }
+    | KW_FLOAT IDENTIFIER MINUS_ASSIGN expression                 { $$ = opr(MINUS_ASSIGN, 2, id($2), $4); }
+    | KW_FLOAT IDENTIFIER STAR_ASSIGN expression                  { $$ = opr(STAR_ASSIGN, 2, id($2), $4); }
+    | KW_FLOAT IDENTIFIER SLASH_ASSIGN expression                 { $$ = opr(SLASH_ASSIGN, 2, id($2), $4); }
+    | KW_INT IDENTIFIER ASSIGN expression                         { $$ = opr(ASSIGN, 2, id($2), $4); }
+    | KW_INT IDENTIFIER PLUS_ASSIGN expression                    { $$ = opr(PLUS_ASSIGN, 2, id($2), $4); }
+    | KW_INT IDENTIFIER MINUS_ASSIGN expression                   { $$ = opr(MINUS_ASSIGN, 2, id($2), $4); }
+    | KW_INT IDENTIFIER STAR_ASSIGN expression                    { $$ = opr(STAR_ASSIGN, 2, id($2), $4); }
+    | KW_INT IDENTIFIER SLASH_ASSIGN expression                   { $$ = opr(SLASH_ASSIGN, 2, id($2), $4); }
+    | KW_STRING IDENTIFIER ASSIGN expression                      { $$ = opr(ASSIGN, 2, id($2), $4); }
+    | KW_STRING IDENTIFIER PLUS_ASSIGN expression                 { $$ = opr(PLUS_ASSIGN, 2, id($2), $4); }
+    | KW_STRING IDENTIFIER MINUS_ASSIGN expression                { $$ = opr(MINUS_ASSIGN, 2, id($2), $4); }
+    | KW_STRING IDENTIFIER STAR_ASSIGN expression                 { $$ = opr(STAR_ASSIGN, 2, id($2), $4); }
+    | KW_STRING IDENTIFIER SLASH_ASSIGN expression                { $$ = opr(SLASH_ASSIGN, 2, id($2), $4); }
     ;
 
 expression
-    : INTEGER 													{ $$ = conInt($1); printf("Integer: %d\n", $1); }
-    | FLOAT 													{ $$ = conFloat($1); printf("Float: %f\n", $1); }
-    | IDENTIFIER 												{ $$ = id($1); printf("Identifier: %s\n", $1); }
-    | STRING 													{ $$ = conString($1); printf("String: %s\n", $1); }
-    | BOOLEAN 													{ $$ = conBool($1); printf("Boolean: %d\n", $1); }	
-    | expression PLUS expression 								{ $$ = opr(PLUS, 2, $1, $3); printf("Add Integer\n"); }
-    | expression MINUS expression 								{ $$ = opr(MINUS, 2, $1, $3); printf("Subtract Integer\n"); }
-    | expression STAR expression 								{ $$ = opr(STAR, 2, $1, $3); printf("Multiply Integer\n"); }
-    | expression SLASH expression 								{ $$ = opr(SLASH, 2, $1, $3); printf("Divide Integer\n"); }
-    | expression PERCENT expression 							{ $$ = opr(PERCENT, 2, $1, $3); printf("Modulo Integer\n"); }
-    | expression EQ expression 									{ $$ = opr(EQ, 2, $1, $3); printf("Equal Integer\n"); }
-    | expression NEQ expression 								{ $$ = opr(NEQ, 2, $1, $3); printf("Not Equal Integer\n"); }
-    | expression LT expression 									{ $$ = opr(LT, 2, $1, $3); printf("Less Than Integer\n"); }
-    | expression GT expression 									{ $$ = opr(GT, 2, $1, $3); printf("Greater Than Integer\n"); }
-    | expression LE expression 									{ $$ = opr(LE, 2, $1, $3); printf("Less Than or Equal Integer\n"); }
-    | expression GE expression 									{ $$ = opr(GE, 2, $1, $3); printf("Greater Than or Equal Integer\n"); }
-    | expression AND expression 								{ $$ = opr(AND, 2, $1, $3); printf("Logical And Boolean\n"); }
-    | expression OR expression 									{ $$ = opr(OR, 2, $1, $3); printf("Logical Or Boolean\n"); }
-    | NOT expression 											{ $$ = opr(NOT, 1, $2); printf("Logical Not Boolean\n"); }
-    | LPAREN expression RPAREN                              	{ $$ = $2; printf("Parentheses\n"); }
+    : INTEGER 													{ $$ = conInt($1);  }
+    | FLOAT 													{ $$ = conFloat($1);  }
+    | IDENTIFIER 												{ $$ = id($1);  }
+    | STRING 													{ $$ = conString($1);  }
+    | BOOLEAN 													{ $$ = conBool($1);  }	
+    | expression PLUS expression 								{ $$ = opr(PLUS, 2, $1, $3);  }
+    | expression MINUS expression 								{ $$ = opr(MINUS, 2, $1, $3);  }
+    | expression STAR expression 								{ $$ = opr(STAR, 2, $1, $3);  }
+    | expression SLASH expression 								{ $$ = opr(SLASH, 2, $1, $3);  }
+    | expression PERCENT expression 							{ $$ = opr(PERCENT, 2, $1, $3);  }
+    | expression EQ expression 									{ $$ = opr(EQ, 2, $1, $3);  }
+    | expression NEQ expression 								{ $$ = opr(NEQ, 2, $1, $3);  }
+    | expression LT expression 									{ $$ = opr(LT, 2, $1, $3);  }
+    | expression GT expression 									{ $$ = opr(GT, 2, $1, $3);  }
+    | expression LE expression 									{ $$ = opr(LE, 2, $1, $3);  }
+    | expression GE expression 									{ $$ = opr(GE, 2, $1, $3);  }
+    | expression AND expression 								{ $$ = opr(AND, 2, $1, $3);  }
+    | expression OR expression 									{ $$ = opr(OR, 2, $1, $3);  }
+    | expression BIT_AND expression                             { $$ = opr(BIT_AND, 2, $1, $3); }
+    | expression BIT_OR expression                              { $$ = opr(BIT_OR, 2, $1, $3); }
+    | expression BIT_XOR expression                             { $$ = opr(BIT_XOR, 2, $1, $3); }
+    | expression BIT_NOT expression                             { $$ = opr(BIT_NOT, 2, $1, $3); }
+    | expression SHIFT_LEFT expression                          { $$ = opr(SHIFT_LEFT, 2, $1, $3); }
+    | expression SHIFT_RIGHT expression                         { $$ = opr(SHIFT_RIGHT, 2, $1, $3); }
+    | NOT expression 											{ $$ = opr(NOT, 1, $2);  }
+    | LPAREN expression RPAREN                              	{ $$ = $2;  }
     ;
 
 block_statement
-    : LBRACE statement_list RBRACE                              { $$ = opr(BLOCK, 1, $2); printf("Parsed block statement\n"); }
-    | LBRACE RBRACE                                             { $$ = opr(BLOCK, 1, NULL); printf("Empty block statement\n"); }
+    : LBRACE statement_list RBRACE                              { $$ = opr(BLOCK, 1, $2);  }
+    | LBRACE RBRACE                                             { $$ = opr(BLOCK, 1, NULL);  }
+    ;
+
+iterative_statement
+    : WHILE LPAREN condition RPAREN iter_body                  { $$ = opr(WHILE, 2, $3, $5);  }
+    | WHILE LPAREN condition RPAREN SEMICOLON                  { $$ = opr(WHILE, 2, $3, NULL);  }
+    | REPEATUNTIL LPAREN condition RPAREN iter_body            { $$ = opr(REPEATUNTIL, 2, $3, $5);  }
+    | REPEATUNTIL LPAREN condition RPAREN SEMICOLON            { $$ = opr(REPEATUNTIL, 2, $3, NULL);  }
+    | FOR LPAREN for_condition RPAREN iter_body                { $$ = opr(FOR, 2, $3, $5);  }
+    | FOR LPAREN for_condition RPAREN SEMICOLON                { $$ = opr(FOR, 2, $3, NULL);  }
+    ;
+
+condition
+    : expression                                               { $$ = opr(COND, 1, $1); }
+    ;
+
+for_condition
+    : for_init SEMICOLON for_terminate SEMICOLON for_step                { $$ = opr(FOR_COND, 3, $1, $3, $5); } 
+    ;
+
+for_init
+    : assignment_statement                                      { $$ = opr(FOR_INIT, 1, $1); }
+    ;
+
+for_terminate
+    : expression                                                { $$ = opr(FOR_TERM, 1, $1); }
+    ;
+
+for_step
+    : assignment_statement                                     { $$ = opr(FOR_STEP, 1, $1); }
+    ;
+
+iter_body
+    : statement                                                { $$ = opr(ITER_BODY, 1, $1); }
+    ;
+
+function_statement
+    : KW_INT IDENTIFIER LPAREN function_arguments RPAREN function_body { $$ = opr(FUNC, 2, $4, $6); }
+    ;
+function_arguments
+    : function_arguments COMMA function_argument                    { $$ = opr(FUNC_ARG_LIST, 2, $1, $3); }
+    | function_argument                                             { $$ = $1; }   
+    ;
+
+function_argument
+    : declaration_statement                                         { $$ = opr(FUNC_ARG, 1, $1); }
+
+function_body
+    : block_statement                                               { $$ = opr(FUNC_BODY, 1, $1);  }
+    ;
+
+conditional_statement   
+    : IF LPAREN condition RPAREN if_body %prec LOWER_THAN_ELSE      {$$ = opr(IF, 2, $3, $5);}
+    | IF LPAREN condition RPAREN if_body ELSE else_body             {$$ = opr(IFELSE, 3, $3, $5, $7);}
+    | SWITCH LPAREN switch_variable RPAREN switch_body                   {$$ = opr(SWITCH, 2, $3, $5);}
+    ;
+
+switch_variable
+    : IDENTIFIER                                                    {$$ = opr(SWITCH_VAR, 1, id($1));}
+    ;
+
+switch_body
+    : LBRACE switch_cases default_case RBRACE                       {$$ = opr(SWITCH_BODY, 2, $2, $3);}
+    | LBRACE switch_cases RBRACE                                    {$$ = opr(SWITCH_BODY, 1, $2); ex($$);}
+    ;
+
+switch_cases
+    : switch_cases single_case                                      {$$ = opr(SWITCH_CASES, 2, $1, $2);}
+    | single_case                                                   {$$ = $1;}
+    ;
+
+single_case
+    : CASE case_value COLON statement_list                             {$$ = opr(SWITCH_CASE, 2, $2, $4);}
+    ;
+
+case_value
+    : INTEGER 													{ $$ = conInt($1);  }
+    | FLOAT 													{ $$ = conFloat($1);  }
+    | STRING 													{ $$ = conString($1);  }
+    | BOOLEAN 													{ $$ = conBool($1);  }
+    ;
+
+default_case
+    : DEFAULT COLON statement_list                                  {$$ = opr(DEFAULT_CASE, 1, $3);}
     ;
 
 
-
-
+if_body
+    : statement                                                     {$$ = $1}
+    ;
+    
+else_body
+    : statement                                                     {$$ = $1}
+    ;
+    
 %%
 
 nodeType *conInt(int value) {
@@ -191,7 +329,7 @@ nodeType *conString(char* value) {
 
 nodeType *id(char* name) {
     nodeType *p;
-    printf("name: %s\n", name);
+    
 
     /* allocate node */
     if ((p = (nodeType*)malloc(sizeof(nodeType))) == NULL)
@@ -254,14 +392,14 @@ void freeNode(nodeType *p) {
 }
 
 void yyerror(char *s) {
-    fprintf(stdout, "%s\n", s);
+    
 }
 
 
 int main() {
+    
     yyparse();
-    printf("A:");
     ex(topNode);
-    printf("B:");
+    
     return 0;
 }

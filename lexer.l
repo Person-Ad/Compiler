@@ -28,6 +28,7 @@ IDENT_CHAR  [a-zA-Z0-9_]
 "if"                        { return IF; }
 "else"                      { return ELSE; }
 "while"                     { return WHILE; }
+"repeat-until"              { return REPEATUNTIL; }
 "for"                       { return FOR; }
 "switch"                    { return SWITCH; }
 "case"                      { return CASE; }
@@ -67,12 +68,30 @@ IDENT_CHAR  [a-zA-Z0-9_]
 ">="                        { return GE; }
 "&&"                        { return AND; }
 "||"                        { return OR; }
+
+"&"                        { return BIT_AND; }
+"|"                         { return BIT_OR; }
+"^"                         { return BIT_XOR; }
+"~"                         { return BIT_NOT; }
+"<<"                        { return SHIFT_LEFT; }
+">>"                        { return SHIFT_RIGHT; }
+"++"                       { return INCREMENT; }
+"--"                       { return DECREMENT; }
+
+"+="                      { return PLUS_ASSIGN; }
+"-="                      { return MINUS_ASSIGN; }
+"*="                      { return STAR_ASSIGN; }
+"/="                      { return SLASH_ASSIGN; }
+
+
+
 "!"                         { return NOT; }
 "="                         { return ASSIGN; }
 "?"                         { return TERNARY; }
 
 ":"                         { return COLON; }
 ";"                         { return SEMICOLON; }
+","                         { return COMMA; }
 "("                         { return LPAREN; }
 ")"                         { return RPAREN; }
 "{"                         { return LBRACE; }

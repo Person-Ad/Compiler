@@ -96,19 +96,87 @@ void exNode(nodeType *p,
             s = "[block]";
             break;
         case WHILE:
-            s = "while";
+            s = "[while]";
             break;
-        // case PRINT:     s = "print"; break;
+        case REPEATUNTIL:
+            s = "[repeat-until]";
+            break;
+        case COND:
+            s = "[COND]";
+            break;
+        case ITER_BODY:
+            s = "[ITER_BODY]";
+            break;
+        case FOR:
+            s = "[FOR]";
+            break;            
+        case FOR_COND:
+            s = "[FOR_COND]";
+            break;
+        case FOR_INIT:
+            s = "[FOR_INIT]";
+            break;
+        case FOR_STEP:
+            s = "[FOR_STEP]";
+            break;
+        case FOR_TERM:
+            s = "[FOR_TERM]";
+            break;
+        case FUNC:
+            s = "[FUNC]";
+            break;
+        case FUNC_ARG_LIST:
+            s = "[FUNC_ARG_LIST]";
+            break;
+        case FUNC_ARG:
+            s = "[FUNC_ARG]";
+            break;
+        case FUNC_BODY:
+            s = "[FUNC_BODY]";
+            break;
+        case IF:
+            s = "[IF]";
+            break;
+        case IFELSE:
+            s = "[IF-ELSE]";
+            break;
+        
         case SWITCH:
-            s = "switch";
+            s = "[switch]";
             break;
+        case SWITCH_BODY:
+            s = "[SWITCH_BODY]";
+            break;
+        case SWITCH_CASES:
+            s = "[SWITCH_CASES]";
+            break;
+        case SWITCH_CASE:
+            s = "[SWITCH_CASE]";
+            break;
+        case SWITCH_VAR:
+            s = "[SWITCH_VAR]";
+            break;  
+        case DEFAULT_CASE:
+            s = "[DEFAULT_CASE]";
+            break;        
         case SEMICOLON:
             s = "[;]";
             break;
         case ASSIGN:
             s = "[=]";
             break;
-        // case UMINUS:    s = "[_]";     break;
+        case PLUS_ASSIGN:
+            s = "[+=]";
+            break;
+        case MINUS_ASSIGN:
+            s = "[-=]";
+            break;
+        case STAR_ASSIGN:
+            s = "[*=]";
+            break;
+        case SLASH_ASSIGN:
+            s = "[/=]";
+            break;
         case PLUS:
             s = "[+]";
             break;
@@ -147,17 +215,6 @@ void exNode(nodeType *p,
             break;
         case S:
             s = "[ST]";
-            break;
-        }
-        break;
-    case typeIfCond:
-        switch (p->opr.oper)
-        {
-            case IF:
-            s = "if";
-            break;
-            case ELSE:
-            s = "else";
             break;
         }
         break;

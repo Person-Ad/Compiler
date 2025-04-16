@@ -1,6 +1,99 @@
-bison -d parser.y
-flex lexer.l
-g++ lex.yy.c parser.tab.c graph.c -o base.exe
-echo Build completed successfully. Output: base.exe
+@echo off
+setlocal
 
-base.exe
+REM --- Configuration ---
+REM Set the path to the single test file you want to run
+set TEST_FILE1=tests\test1.txt
+set TEST_FILE2=tests\test2.txt
+set TEST_FILE3=tests\test3.txt
+set TEST_FILE4=tests\test4.txt
+
+REM Use %~dp0 to get the directory the batch script is in
+set BASE_EXE_PATH="%~dp0base.exe"
+
+REM --- Build Step ---
+echo Building the compiler...
+bison -d parser.y
+if errorlevel 1 (
+    echo Bison failed. Exiting.
+    exit /b 1
+)
+flex lexer.l
+if errorlevel 1 (
+    echo Flex failed. Exiting.
+    exit /b 1
+)
+REM Compile to the determined path, suppressing warnings
+g++ lex.yy.c parser.tab.c graph.c -o %BASE_EXE_PATH% -Wno-register -Wno-write-strings
+if errorlevel 1 (
+    echo g++ compilation failed. Exiting.
+    exit /b 1
+)
+echo Build completed successfully. Output: %BASE_EXE_PATH%
+echo.
+
+REM --- Single Test Execution Step ---
+
+REM Check if the specified test file exists
+if not exist "%TEST_FILE1%" (
+    echo Test file not found: %TEST_FILE1%
+    echo Please make sure it exists and the path is correct.
+    goto End
+)
+
+REM Check if the executable exists
+if not exist %BASE_EXE_PATH% (
+    echo Compiler executable not found: %BASE_EXE_PATH%
+    echo Build might have failed. Skipping test.
+    goto End
+)
+
+echo Running single test: "%TEST_FILE1%"
+echo ============================================
+echo.
+
+REM Explicitly use cmd /c to handle the command execution and redirection
+cmd /c "%BASE_EXE_PATH% < %TEST_FILE1%"
+
+echo.
+echo ============================================
+echo Test finished.
+
+echo Running single test: "%TEST_FILE2%"
+echo ============================================
+echo.
+
+REM Explicitly use cmd /c to handle the command execution and redirection
+cmd /c "%BASE_EXE_PATH% < %TEST_FILE2%"
+
+echo.
+echo ============================================
+echo Test finished.
+
+echo Running single test: "%TEST_FILE3%"
+echo ============================================
+echo.
+
+REM Explicitly use cmd /c to handle the command execution and redirection
+cmd /c "%BASE_EXE_PATH% < %TEST_FILE3%"
+
+echo.
+echo ============================================
+echo Test finished.
+
+echo Running single test: "%TEST_FILE4%"
+echo ============================================
+echo.
+
+REM Explicitly use cmd /c to handle the command execution and redirection
+cmd /c "%BASE_EXE_PATH% < %TEST_FILE4%"
+
+echo.
+echo ============================================
+echo Test finished.
+
+
+:End
+echo.
+pause
+endlocal

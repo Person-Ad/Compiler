@@ -1,0 +1,22 @@
+if(x == y){
+    g = 3;
+    int z = 77;
+    if(x == 4){
+        y = 8;
+    }
+}
+if(x == 3) 
+    if(x > 3){
+        f = 2;
+    }else{
+        f = 3;
+    }
+if (t == m){
+    s = 3;
+}
+if (x > 5)
+    while(x > t){
+        z = 17;
+    }
+
+if (true) if (false) y += 13; else k = 4;
