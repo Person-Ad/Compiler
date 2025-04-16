@@ -158,7 +158,25 @@ void exNode(nodeType *p,
             break;  
         case DEFAULT_CASE:
             s = "[DEFAULT_CASE]";
-            break;        
+            break;  
+        case INCREMENT_PREFIX:
+            s = "[INCREMENT_PREFIX]";
+            break;  
+        case DECREMENT_PREFIX:
+            s = "[DECREMENT_PREFIX]";
+            break;  
+        case INCREMENT_POSTFIX:
+            s = "[INCREMENT_POSTFIX]";
+            break;  
+        case DECREMENT_POSTFIX:
+            s = "[DECREMENT_POSTFIX]";
+            break;
+        case BREAK:
+            s = "[BREAK]";
+            break; 
+        case CONTINUE:
+            s = "[CONTINUE]";
+            break;  
         case SEMICOLON:
             s = "[;]";
             break;

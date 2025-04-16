@@ -2,6 +2,7 @@ switch(x){
     case 1:
         y = 4;
         z = 4;
+        break;
     case 2:
         y = 13;
     default:

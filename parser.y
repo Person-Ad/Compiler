@@ -7,7 +7,6 @@
     #include <stdbool.h>
     #include "parser.tab.h"
 	int yylex(void);
-
 	// Expression Nodes
 	nodeType *opr(int oper, int nops, ...);
 	nodeType *id(char* i);
@@ -53,11 +52,16 @@
 %right ASSIGN
 %left OR
 %left AND
+%left BIT_OR
+%left BIT_XOR
+%left BIT_AND
 %left EQ NEQ
 %left LT GT LE GE
+%left SHIFT_LEFT SHIFT_RIGHT
 %left PLUS MINUS
 %left STAR SLASH PERCENT
-%right NOT
+%right NOT BIT_NOT
+%left INCREMENT DECREMENT
 
 %type <nodeValue> expression statement_list statement program iter_body condition for_condition for_init for_terminate for_step
 %type <nodeValue> declaration_statement assignment_statement block_statement iterative_statement conditional_statement
@@ -90,6 +94,8 @@ statement
     | iterative_statement                                       { $$ = $1; }
     | function_statement                                        { $$ = $1; }
     | block_statement                                           { $$ = $1; }
+    | BREAK SEMICOLON                                           { $$ = opr(BREAK, 0); }
+    | CONTINUE SEMICOLON                                        { $$ = opr(CONTINUE, 0); }
     ;
 
 // Note: no declaration of constants with no values
@@ -165,11 +171,11 @@ expression
     | expression BIT_AND expression                             { $$ = opr(BIT_AND, 2, $1, $3); }
     | expression BIT_OR expression                              { $$ = opr(BIT_OR, 2, $1, $3); }
     | expression BIT_XOR expression                             { $$ = opr(BIT_XOR, 2, $1, $3); }
-    | expression BIT_NOT expression                             { $$ = opr(BIT_NOT, 2, $1, $3); }
-    | expression SHIFT_LEFT expression                          { $$ = opr(SHIFT_LEFT, 2, $1, $3); }
-    | expression SHIFT_RIGHT expression                         { $$ = opr(SHIFT_RIGHT, 2, $1, $3); }
+    | BIT_NOT expression                                        { $$ = opr(BIT_NOT, 1, $2); }
+    | expression SHIFT_LEFT INTEGER                             { $$ = opr(SHIFT_LEFT, 2, $1, conInt($3)); }
+    | expression SHIFT_RIGHT INTEGER                            { $$ = opr(SHIFT_RIGHT, 2, $1, conInt($3)); }
     | NOT expression 											{ $$ = opr(NOT, 1, $2);  }
-    | LPAREN expression RPAREN                              	{ $$ = $2;  }
+    | LPAREN expression RPAREN                              	{ $$ = $2; }
     ;
 
 block_statement
@@ -219,7 +225,9 @@ function_arguments
     ;
 
 function_argument
-    : declaration_statement                                         { $$ = opr(FUNC_ARG, 1, $1); }
+    : declaration_statement %prec LOWER_THAN_ELSE                   { $$ = opr(FUNC_ARG, 1, $1); }
+    | declaration_statement ASSIGN case_value                       { $$ = opr(FUNC_ARG, 2, $1, $3); }
+    ;
 
 function_body
     : block_statement                                               { $$ = opr(FUNC_BODY, 1, $1);  }
@@ -231,8 +239,16 @@ conditional_statement
     | SWITCH LPAREN switch_variable RPAREN switch_body                   {$$ = opr(SWITCH, 2, $3, $5);}
     ;
 
+if_body
+    : statement                                                     {$$ = $1}
+    ;
+    
+else_body
+    : statement                                                     {$$ = $1}
+    ;
+
 switch_variable
-    : IDENTIFIER                                                    {$$ = opr(SWITCH_VAR, 1, id($1));}
+    : IDENTIFIER                                                   {$$ = opr(SWITCH_VAR, 1, id($1));}
     ;
 
 switch_body
@@ -261,13 +277,6 @@ default_case
     ;
 
 
-if_body
-    : statement                                                     {$$ = $1}
-    ;
-    
-else_body
-    : statement                                                     {$$ = $1}
-    ;
     
 %%
 
