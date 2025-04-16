@@ -134,6 +134,9 @@ void exNode(nodeType *p,
         case FUNC_BODY:
             s = "[FUNC_BODY]";
             break;
+        case RETURN:
+            s = "[RETURN]";
+            break;
         case IF:
             s = "[IF]";
             break;
@@ -174,6 +177,18 @@ void exNode(nodeType *p,
         case BREAK:
             s = "[BREAK]";
             break; 
+        case FUNC_CALL:
+            s = "[FUNC_CALL]";
+            break;  
+        case FUNC_ID:
+            s = "[FUNC_ID]";
+            break;  
+        case ARG_VALUES:
+            s = "[ARG_VALUES]";
+            break;  
+        case ARG_VALUE:
+            s = "[ARG_VALUE]";
+            break;  
         case CONTINUE:
             s = "[CONTINUE]";
             break;  
@@ -227,6 +242,24 @@ void exNode(nodeType *p,
             break;
         case AND:
             s = "[&&]";
+            break;
+        case SHIFT_LEFT:
+            s = "[<<]";
+            break;
+        case SHIFT_RIGHT:
+            s = "[>>]";
+            break;
+        case BIT_AND:
+            s = "[&]";
+            break;
+        case BIT_OR:
+            s = "[|]";
+            break;
+        case BIT_XOR:
+            s = "[^]";
+            break;
+        case BIT_NOT:
+            s = "[~]";
             break;
         case SL:
             s = "[ST_L]";

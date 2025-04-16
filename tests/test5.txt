@@ -1,0 +1,17 @@
+
+var x;
+var y;
+x = 10;
+y = 2;
+x = x << y;
+while (i < 20) {
+    i = i + 1;
+    if (i == 15) continue;
+    if (i == 18) break;
+}
+
+repeat-until (i > 10) {
+    i = i - 1;
+}
+
+

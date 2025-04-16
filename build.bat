@@ -7,6 +7,7 @@ set TEST_FILE1=tests\test1.txt
 set TEST_FILE2=tests\test2.txt
 set TEST_FILE3=tests\test3.txt
 set TEST_FILE4=tests\test4.txt
+set TEST_FILE5=tests\test5.txt
 
 REM Use %~dp0 to get the directory the batch script is in
 set BASE_EXE_PATH="%~dp0base.exe"
@@ -87,6 +88,18 @@ echo.
 
 REM Explicitly use cmd /c to handle the command execution and redirection
 cmd /c "%BASE_EXE_PATH% < %TEST_FILE4%"
+
+echo.
+echo ============================================
+echo Test finished.
+
+
+echo Running single test: "%TEST_FILE5%"
+echo ============================================
+echo.
+
+REM Explicitly use cmd /c to handle the command execution and redirection
+cmd /c "%BASE_EXE_PATH% < %TEST_FILE5%"
 
 echo.
 echo ============================================

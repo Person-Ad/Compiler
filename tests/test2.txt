@@ -1,4 +1,5 @@
 
 int hamada(int x, float z = 1.5){y = 4;}
-int omar(float y, bool iseng){ hamada = false;}
+int omar(float y, bool iseng){ hamada = false; return hamada;}
+omar(1.5, true);
 x++;

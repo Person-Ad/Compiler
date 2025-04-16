@@ -38,7 +38,6 @@ IDENT_CHAR  [a-zA-Z0-9_]
 "return"                    { return RETURN; }
 "var"                       { return KW_VAR; }
 "const"                     { return KW_CONST; }
-"func"                      { return KW_FUNC; }
 "int"                       { return KW_INT; }
 "float"                     { return KW_FLOAT; }
 "bool"                      { return KW_BOOL; }

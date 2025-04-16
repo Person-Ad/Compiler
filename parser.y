@@ -37,7 +37,7 @@
 // Token declarations
 %token WHILE REPEATUNTIL SWITCH CASE DEFAULT BREAK CONTINUE RETURN TERNARY COLON SL S BLOCK
 %token COND ITER_BODY FOR FOR_COND FOR_INIT FOR_STEP FOR_TERM
-%token COMMA FUNC FUNC_ARG_LIST FUNC_BODY FUNC_ARG
+%token COMMA FUNC FUNC_ARG_LIST FUNC_BODY FUNC_ARG FUNC_CALL ARG_VALUES ARG_VALUE FUNC_ID
 %token IF ELSE IFELSE
 %token SWITCH_BODY SWITCH_CASES SWITCH_CASE  DEFAULT_CASE SWITCH_VAR
 %token INCREMENT_PREFIX INCREMENT_POSTFIX DECREMENT_POSTFIX DECREMENT_PREFIX
@@ -65,7 +65,7 @@
 
 %type <nodeValue> expression statement_list statement program iter_body condition for_condition for_init for_terminate for_step
 %type <nodeValue> declaration_statement assignment_statement block_statement iterative_statement conditional_statement
-%type <nodeValue> function_arguments function_statement function_body function_argument
+%type <nodeValue> function_arguments function_statement function_body function_argument arguments_values argument_value function_id
 %type <nodeValue> if_body else_body 
 %type <nodeValue> switch_body switch_variable switch_cases single_case default_case case_value
 
@@ -96,6 +96,7 @@ statement
     | block_statement                                           { $$ = $1; }
     | BREAK SEMICOLON                                           { $$ = opr(BREAK, 0); }
     | CONTINUE SEMICOLON                                        { $$ = opr(CONTINUE, 0); }
+    | RETURN expression SEMICOLON                               { $$ = opr(RETURN, 1, $2); }
     ;
 
 // Note: no declaration of constants with no values
@@ -174,6 +175,8 @@ expression
     | BIT_NOT expression                                        { $$ = opr(BIT_NOT, 1, $2); }
     | expression SHIFT_LEFT INTEGER                             { $$ = opr(SHIFT_LEFT, 2, $1, conInt($3)); }
     | expression SHIFT_RIGHT INTEGER                            { $$ = opr(SHIFT_RIGHT, 2, $1, conInt($3)); }
+    | expression SHIFT_LEFT IDENTIFIER                             { $$ = opr(SHIFT_LEFT, 2, $1, id($3)); }
+    | expression SHIFT_RIGHT IDENTIFIER                            { $$ = opr(SHIFT_RIGHT, 2, $1, id($3)); }
     | NOT expression 											{ $$ = opr(NOT, 1, $2);  }
     | LPAREN expression RPAREN                              	{ $$ = $2; }
     ;
@@ -217,11 +220,26 @@ iter_body
     ;
 
 function_statement
-    : KW_INT IDENTIFIER LPAREN function_arguments RPAREN function_body { $$ = opr(FUNC, 2, $4, $6); }
+    : KW_INT function_id LPAREN function_arguments RPAREN function_body { $$ = opr(FUNC, 2, $4, $6); }
+    | KW_INT function_id LPAREN function_arguments RPAREN SEMICOLON     { $$ = opr(FUNC, 1, $4); }    
+    | function_id LPAREN arguments_values RPAREN SEMICOLON           { $$ = opr(FUNC_CALL, 2, $1, $3); }
     ;
 function_arguments
     : function_arguments COMMA function_argument                    { $$ = opr(FUNC_ARG_LIST, 2, $1, $3); }
     | function_argument                                             { $$ = $1; }   
+    ;
+
+function_id
+    : IDENTIFIER                                                    { $$ = opr(FUNC_ID, 1, id($1)); }
+    ;
+
+arguments_values
+    : arguments_values COMMA argument_value                         { $$ = opr(ARG_VALUES, 2, $1, $3); }
+    | argument_value                                                { $$ = $1; }
+    ;
+
+argument_value
+    : case_value                                                    { $$ = opr(ARG_VALUE, 1, $1); }
     ;
 
 function_argument
@@ -236,7 +254,7 @@ function_body
 conditional_statement   
     : IF LPAREN condition RPAREN if_body %prec LOWER_THAN_ELSE      {$$ = opr(IF, 2, $3, $5);}
     | IF LPAREN condition RPAREN if_body ELSE else_body             {$$ = opr(IFELSE, 3, $3, $5, $7);}
-    | SWITCH LPAREN switch_variable RPAREN switch_body                   {$$ = opr(SWITCH, 2, $3, $5);}
+    | SWITCH LPAREN switch_variable RPAREN switch_body              {$$ = opr(SWITCH, 2, $3, $5);}
     ;
 
 if_body
@@ -253,7 +271,7 @@ switch_variable
 
 switch_body
     : LBRACE switch_cases default_case RBRACE                       {$$ = opr(SWITCH_BODY, 2, $2, $3);}
-    | LBRACE switch_cases RBRACE                                    {$$ = opr(SWITCH_BODY, 1, $2); ex($$);}
+    | LBRACE switch_cases RBRACE                                    {$$ = opr(SWITCH_BODY, 1, $2); }
     ;
 
 switch_cases
