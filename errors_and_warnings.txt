@@ -1,0 +1,4 @@
+Warning: Implicit conversion from int to bool
+Error: Constant z cannot be reassigned
+Warning: Variable (z): Implicit conversion from bool to int
+Warning: Unused variable 'submitted'.

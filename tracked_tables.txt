@@ -1,0 +1,9 @@
+# All Tracked Symbol Tables
+
+## Symbol Table #1 (Address: `000001d487f40840`, Parent Address: `0000000000000000`)
+
+| Name | Type | Kind | Param Count | Sub Block Table | Defined | Used |
+|------|------|------|-------------|-----------------|---------|------|
+| z | int | variable | 0 | 0000000000000000 | Yes | No |
+| submitted | bool | variable | 0 | 0000000000000000 | Yes | No |
+

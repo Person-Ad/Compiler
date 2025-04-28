@@ -1,0 +1,39 @@
+int s;
+int s(float m){}
+string helloWorld = "Hello World";
+int x(int k){
+    float z = 11;
+    const x = 4;
+    z += 11;
+    z *= 11;
+    z -= true;
+    z /= 11;
+    while(z > 0){}
+    switch(z){
+        case 11:
+        case 14:
+        case 122:
+        case 10:
+            int uu = z + 12;
+        case 12:
+            int i = 10;
+    }
+
+    int uuu = 12;
+    ++uuu;
+    uuu--;
+
+
+    if(z == 1){
+        
+    }else if(z == 2){
+
+    }else if(z == 3){
+
+    }else{
+
+    }
+
+}
+
+int fHolder = s(10);
